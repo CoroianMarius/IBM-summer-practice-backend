@@ -6,6 +6,8 @@ const EventSchema = new mongoose.Schema({
     location: {type: String, required: true},
     description: {type: String, required: true},
     tags: {type: String,},
+    invites: [String],
+    participants: [String],
 })
 
 const Event = mongoose.model('Event', EventSchema)

@@ -113,35 +113,18 @@ eventsRouter.delete('/', passport.authenticate('jwt',{session: false}),async(req
 
 
 
-//_________________________________________IA TOATE EVENIMENTELE(ADMIN sau USER)__________________________________________________________________________________________________
- eventsRouter.get('/', passport.authenticate('jwt',{session: false}), async(req,res) => {
-    try{
-        const events = await Event.find({})
-        if(events.length == 0){
-            return res.status(400).json({message: {msgBody: "There are no events to show", msgError: true}})
-        }
-        res.status(200).json({message: {events: events},msgError: false})
-    }catch(err){
-        console.log(err)
-    }
- })
+//_______________________________________Afiseaza eventurile care nu au useri in fieldu-rile  [invites / participants]______________________________________________________________________________
+eventsRouter.get('/discover', async(req,res) => {
 
+    const events = await Event.find({$and: [{invites: {$size: 0}},{participants: {$size: 0}}]})
 
+    if(events.length === 0) return res.status(400).json({message: {msgBody: 'no events to discover'},msgError: true})
 
+    res.status(200).json({message: {msgBody: 'events discovered',msgError: false},events})
+    
 
-
- 
-
-//__________________________________________IA UN SINGUR EVENIMENT(ADMIN sau USER)______________________________________________________________________________
- eventsRouter.get('/:id',passport.authenticate('jwt', {session: false}), async(req,res) => {
-    const {id} = req.params
-    const event = await Event.findById(id)
-    if(!event){
-        return res.status(404).json({message: {msgBody: "event does't exist"},msgError: true})
-    }
-    res.status(200).json({event: event})
-    console.log(event)
 })
+
 
 
 module.exports = eventsRouter
