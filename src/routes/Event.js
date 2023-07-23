@@ -138,6 +138,7 @@ eventsRouter.get('/upcoming', passport.authenticate('jwt',{session: false}) ,asy
             return res.status(403).json({message: {msgBody: "admin can't be a participant of an event",msgError: true}})
         }
 
+
         const events = await Event.find({participants: req.user.username})
 
         if(events.length === 0) return res.status(400).json({message: {msgBody: 'you are not participant of any event'},msgError: true})

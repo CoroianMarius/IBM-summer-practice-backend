@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 const userRouter = require('./routes/User')
 const eventRouter = require('./routes/Event')
+const groupRouter = require('./routes/Group')
 
 
 
@@ -14,9 +15,10 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true }))
 app.use(cookieParser())
 app.use(express.json())
 
-//_______________USER AND EVENTS API_______________________________________________________
-app.use('/user',userRouter)                                                              //
-app.use('/events',eventRouter)                                                          //
+//_______________USER && EVENTS && GROUPS API_______________________________________________
+app.use('/user',userRouter)                                                               //
+app.use('/events',eventRouter)                                                           //
+app.use('/groups',groupRouter)                                                          //
 //_____________________________________________________________________________________//
 
 
