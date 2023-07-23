@@ -149,7 +149,39 @@ eventsRouter.get('/upcoming', passport.authenticate('jwt',{session: false}) ,asy
     }catch(err){
         console.log(err)
     }
-})
+});
+
+
+// Move the user from invites to participants and delete the event from invites and add the event to participants
+eventsRouter.put('/upcoming/:id', passport.authenticate('jwt',{session: false}), async(req,res) => {
+    try{
+        const {id} = req.params;
+        const event = await Event.findById(id);
+        if(!event) return res.status(400).json({message: {msgBody: 'no event with this id'},msgError: true});
+
+        const user = req.user.username;
+        const invites = event.invites;
+        if(!invites.includes(user)) return res.status(400).json({message: {msgBody: 'you are not invited to this event'},msgError: true});
+
+        const participants = event.participants;
+        if(participants.includes(user)) return res.status(400).json({message: {msgBody: 'you are already a participant of this event'},msgError: true});
+
+        const updatedEvent = await Event.findByIdAndUpdate(id,{
+            $pull: {invites: user},
+            $push: {participants: user}
+        },{new: true});
+
+        res.status(200).json({message: {msgBody: 'you are now a participant of this event',msgError: false},event: updatedEvent});
+
+    }catch(err){
+        console.log(err);
+    }
+});
+
+
+
+
+
 
 
 module.exports = eventsRouter
