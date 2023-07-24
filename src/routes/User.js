@@ -61,4 +61,23 @@ userRouter.get('/authenticated',passport.authenticate('jwt',{session: false}),(r
     }
 })
 
+
+
+
+userRouter.get('/',passport.authenticate('jwt',{session: false}), async(req,res) => {
+        try{
+
+            const users = await User.find({})
+            
+            if(users.length === 0){
+                return res.status(404).json({message: {msgBody: "No users found", msgError: true}})
+            }
+
+            res.status(200).json({users})
+
+        }catch(err){
+            console.log(err)
+        }
+})
+
 module.exports = userRouter
