@@ -13,7 +13,7 @@ groupRouter.get('/', passport.authenticate('jwt', {session: false}), async(req,r
             return res.status(403).json({message: {msgBody: "not an admin, can't get groups", msgError: true}})
         }
 
-        const groups = await Group.find({users: req.user.username}).select('-_id').select('-users')
+        const groups = await Group.find({users: req.user.username}).select('-_id')
         res.status(200).json({groups})
     }catch(err){
         console.log(err)

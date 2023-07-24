@@ -1,12 +1,15 @@
 const mongoose = require('mongoose')
 
+
+const NotificationSchema = new mongoose.Schema({
+    message: String,
+    date: Date,
+})
+
 const GroupSchema = new mongoose.Schema({
     name: {type: String, required: true,unique: [true, 'A group with this name exists'] },
     users: [String],
-    notifications: [{
-        message: String,
-        date: Date,
-    }],
+    notifications: [NotificationSchema],
 })
 
 const Group = mongoose.model('Group', GroupSchema)
