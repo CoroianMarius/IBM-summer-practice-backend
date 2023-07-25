@@ -31,6 +31,13 @@ groupRouter.post('/', passport.authenticate('jwt', {session: false}), async(req,
 
         let {name, users} = req.body;
         users = users.map(user => user.username)
+
+        //            Adaugare notificare ca grupul a fost creat
+        //              Ex: Admin1 created Group1
+        //            Sa se retina data curenta
+        // const msg = "nume" + " created " + name
+        // notifications = [{message: {msg}, date: "current date"}]
+
         //console.log(users);
         if(!name) return res.status(400).json({message: {msgBody: 'please provide a name for the group'},msgError: true})
         await Group.create({name, users});
