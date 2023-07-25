@@ -18,7 +18,27 @@ groupRouter.get('/', passport.authenticate('jwt', {session: false}), async(req,r
     }catch(err){
         console.log(err)
     }
-})
+});
+
+// make the post route for creating a group and adding the user to it
+//_________________________________________CREAZA UN GRUP NOU SI ADAUGA USERUL LOGAT IN EL______________________________________________________________________________
+
+groupRouter.post('/', passport.authenticate('jwt', {session: false}), async(req,res) => {
+    try{
+        if(req.user.role === 'admin'){
+            return res.status(403).json({message: {msgBody: "not an admin, can't create groups", msgError: true}})
+        }
+
+        let {name, users} = req.body;
+        users = users.map(user => user.username)
+        //console.log(users);
+        if(!name) return res.status(400).json({message: {msgBody: 'please provide a name for the group'},msgError: true})
+        await Group.create({name, users});
+    }catch(err){
+        console.log(err)
+    }
+});
+
 
 
 module.exports = groupRouter;
