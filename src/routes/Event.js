@@ -188,6 +188,29 @@ eventsRouter.put('/upcoming/:id', passport.authenticate('jwt',{session: false}),
 
 
 
+//______________________________________________toate events la care userul apare in fieldul invites______________________________________________
+eventsRouter.get('/invites', passport.authenticate('jwt',{session: false}) ,async(req,res) => {
+    try{
+
+        if(req.user.role !== 'admin'){
+            return res.status(403).json({message: {msgBody: "not an admin, can't be invited to an event",msgError: true}})
+        }   
+        
+        const events = await Event.find({invites: req.user.username}).select('title')
+
+        if(events.length === 0) return res.status(400).json({message: {msgBody: 'you are not invited to any event'},msgError: true})
+
+        res.status(200).json({message: {msgBody: 'all events you are invited to',msgError: false},events})
+
+    }catch(err){
+        console.log(err)
+    }
+})
+
+
+
+
+
 
 
 module.exports = eventsRouter
