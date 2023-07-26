@@ -261,14 +261,21 @@ eventsRouter.get('/', passport.authenticate('jwt',{session: false}), async(req,r
 })
 
 
+//_________________________________________ SEND INVITES ______________________________________________________________________________
+eventsRouter.post('/invites', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    
+    try {
+      const { event, users } = req.body;
 
+    const invites = users.filter(user => !event.invites.includes(user) && !event.participants.includes(user));
+    console.log(invites);
+  
+      res.status(201).json({ message: { msgBody: 'Event successfully created', msgError: false } });
 
-
-
-//______________________________________________Create an event_______________________________________________________________________________________
-//iei toți useri din toate grupurile alea
-//Și ii contopești cu aia de la users
-//Si ii pui in invites
+    } catch (err) {
+      console.log(err);
+    }
+  });
 
 
 
