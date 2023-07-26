@@ -3,6 +3,7 @@ const Event = require('../models/Event')
 const passport = require('passport')
 const passportConfig = require('../passport')
 const Group = require('../models/Group')
+const User = require('../models/User')
 
 
 
@@ -141,6 +142,22 @@ eventsRouter.get('/discover', async(req,res) => {
 
 })
 
+
+//_______________________________________Afiseaza toti useri care nu apar la invites / participants ______________________________________________________________________________
+eventsRouter.get('/users/:id', async(req,res) => {
+
+    const event = await Event.findById(req.params.id)
+
+    const users = await User.find({
+        name: { $nin: [...event.invites, ...event.participants] },
+      });
+
+    if(users.length === 0) return res.status(400).json({message: {msgBody: 'no users found'},msgError: true})
+
+    res.status(200).json({message: {msgBody: 'events discovered',msgError: false},users})
+    
+
+})
 
 
 
