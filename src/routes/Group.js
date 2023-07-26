@@ -21,6 +21,23 @@ groupRouter.get('/', passport.authenticate('jwt', {session: false}), async(req,r
 });
 
 
+groupRouter.get('/all', passport.authenticate('jwt', {session: false}), async(req,res) => {
+  try{
+
+      if(req.user.role === 'admin'){
+          return res.status(403).json({message: {msgBody: "not an admin, can't get groups", msgError: true}})
+      }
+
+      const groups = await Group.find()
+      res.status(200).json({groups})
+  }catch(err){
+      console.log(err)
+  }
+});
+
+
+
+
 //_________________________________________IA TOATE GRUPURILE USERULUI (LOGAT) ______________________________________________________________________________
 groupRouter.get('/:name', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
@@ -47,27 +64,38 @@ groupRouter.get('/:name', passport.authenticate('jwt', { session: false }), asyn
 // make the post route for creating a group and adding the user to it
 //_________________________________________CREAZA UN GRUP NOU SI ADAUGA USERUL LOGAT IN EL______________________________________________________________________________
 
-groupRouter.post('/', passport.authenticate('jwt', {session: false}), async(req,res) => {
-    try{
-        if(req.user.role === 'admin'){
-            return res.status(403).json({message: {msgBody: "not an admin, can't create groups", msgError: true}})
-        }
-
-        let {name, users} = req.body;
-        users = users.map(user => user.username)
-
-        //            Adaugare notificare ca grupul a fost creat
-        //              Ex: Admin1 created Group1q
-        //            Sa se retina data curenta
-        // const msg = "nume" + " created " + name
-        // notifications = [{message: {msg}, date: "current date"}]
-
-        //console.log(users);
-        if(!name) return res.status(400).json({message: {msgBody: 'please provide a name for the group'},msgError: true})
-        await Group.create({name, users});
-    }catch(err){
-        console.log(err)
+groupRouter.post('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ message: { msgBody: "not an admin, can't create groups", msgError: true } });
     }
+
+    const { name, users } = req.body;
+    const userIds = users.map(user => user.username);
+
+    // Check if a group with the same name already exists
+    const existingGroup = await Group.findOne({ name });
+    if (existingGroup) {
+      return res.status(400).json({ message: { msgBody: 'A group with the same name already exists', msgError: true } });
+    }
+
+    // Create the new group
+    
+
+    // Create a notification for the group creation
+    const msg = `${req.user.username} created ${name}`;
+    const notification = { message:  msg , date: new Date() };
+    const newGroup = await Group.create({ name, users: userIds, notifications: [notification] });
+    //const newGroup = { name, users: userIds, notifications: [notification] };
+    console.log(newGroup);
+
+    // Add the notification to the user's notifications array
+
+    res.status(201).json({ message: { msgBody: 'Group created successfully', msgError: false }, group: newGroup });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: { msgBody: 'Something went wrong', msgError: true } });
+  }
 });
 
 

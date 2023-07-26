@@ -4,6 +4,8 @@ const mongoose = require('mongoose')
 const NotificationSchema = new mongoose.Schema({
     message: String,
     date: Date,
+    _id: false
+    
 })
 
 const GroupSchema = new mongoose.Schema({
