@@ -21,7 +21,7 @@ groupRouter.get('/', passport.authenticate('jwt', {session: false}), async(req,r
 });
 
 
-//_________________________________________IA TOATE GRUPURILE USERULUI (LOGAT) ______________________________________________________________________________
+//_________________________________________IA TOATi USERII GRUPULUI (LOGAT) ______________________________________________________________________________
 groupRouter.get('/:name', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
       if (req.user.role !== 'admin' && req.user.role !== 'user') {
