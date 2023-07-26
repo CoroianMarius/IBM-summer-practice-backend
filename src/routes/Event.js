@@ -28,7 +28,7 @@ async function getGroupUsers(group){
 //_________________________________________ADAUGA UN EVENIMENT(DOAR ADMIN POATE) ______________________________________________________________________________
 eventsRouter.post('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-      const { title, date, location, description, tags, users, groups } = req.body;
+      const { title, date, location, description, tags, invites } = req.body;
       console.log(req.body);
   
       // Check if all required fields are provided
@@ -36,19 +36,12 @@ eventsRouter.post('/', passport.authenticate('jwt', { session: false }), async (
         return res.status(400).json({ message: { msgBody: 'All fields required' }, msgError: true });
       }
   
-      // Use for...of loop instead of forEach to wait for async operations
-      for (const group of groups) {
-        const groupUsers = await getGroupUsers(group);
-            users.push(...groupUsers);
-        }
-      console.log(users);
-  
       const eventExists = await Event.findOne({ title });
       if (eventExists) {
         return res.status(400).json({ message: { msgBody: 'An event with this name exists', msgError: true } });
       }
   
-      await Event.create({ title, date, location, description, tags });
+      await Event.create({ title, date, location, description, tags, invites});
       res.status(201).json({ message: { msgBody: 'Event successfully created', msgError: false } });
     } catch (err) {
       console.log(err);
