@@ -2,6 +2,7 @@ const express = require('express')
 const Event = require('../models/Event')
 const passport = require('passport')
 const passportConfig = require('../passport')
+const Group = require('../models/Group')
 
 
 
@@ -14,24 +15,46 @@ dc citesti aici? <:*/}
 
 
 
+async function getGroupUsers(group){
+    const groups = await Group.findById({id: group._id})
+    const groupUsers = []
+    groups.forEach(group => {
+        groupUsers.push(...group.users)
+    })
+    console.log(groupUsers)
+    return groupUsers
+}
 
 //_________________________________________ADAUGA UN EVENIMENT(DOAR ADMIN POATE) ______________________________________________________________________________
-eventsRouter.post('/', passport.authenticate('jwt', {session: false}), async(req,res) => {
-    try{
-        if(req.user.role !== 'admin') return res.status(403).json({message: {msgBody: "not an admin, can't create event", msgError: true}})
-
-        const {title,date,location,description,tags} = req.body
-        //nu este neaparat de pus taguri, poate adminul nu vrea sa creeze eveniment cu taguri
-        if(!title || !date || !location || !description) return res.status(400).json({message: {msgBody: 'All fields required'},msgError: true})
-
-        const eventExists = await Event.findOne({title})
-        if(eventExists) res.status(400).json({message: {msgBody: 'An event with this name exists', msgError: true}})
-        await Event.create({title,date,location,description,tags})
-        res.status(201).json({message: {msgBody: 'Event successfully created', msgError: false}})
-    }catch(err){
-        console.log(err)
+eventsRouter.post('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+      const { title, date, location, description, tags, users, groups } = req.body;
+      console.log(req.body);
+  
+      // Check if all required fields are provided
+      if (!title || !date || !location || !description) {
+        return res.status(400).json({ message: { msgBody: 'All fields required' }, msgError: true });
+      }
+  
+      // Use for...of loop instead of forEach to wait for async operations
+      for (const group of groups) {
+        const groupUsers = await getGroupUsers(group);
+            users.push(...groupUsers);
+        }
+      console.log(users);
+  
+      const eventExists = await Event.findOne({ title });
+      if (eventExists) {
+        return res.status(400).json({ message: { msgBody: 'An event with this name exists', msgError: true } });
+      }
+  
+      await Event.create({ title, date, location, description, tags });
+      res.status(201).json({ message: { msgBody: 'Event successfully created', msgError: false } });
+    } catch (err) {
+      console.log(err);
     }
-})
+  });
+  
 
 
 
@@ -192,7 +215,7 @@ eventsRouter.put('/upcoming/:id', passport.authenticate('jwt',{session: false}),
 eventsRouter.get('/invites', passport.authenticate('jwt',{session: false}) ,async(req,res) => {
     try{
         
-        const events = await Event.find({invites: req.user.username}).select('title')
+        const events = await Event.find({invites: req.user.username})
 
         if(events.length === 0) return res.status(400).json({message: {msgBody: 'you are not invited to any event'},msgError: true})
 
@@ -203,6 +226,39 @@ eventsRouter.get('/invites', passport.authenticate('jwt',{session: false}) ,asyn
     }
 })
 
+
+
+
+
+
+//______________________________________________get all events_______________________________________________________________________________________
+eventsRouter.get('/', passport.authenticate('jwt',{session: false}), async(req,res) => {
+    try{
+
+        if(req.user.role === 'admin' || req.user.role === 'user'){
+            const events = await Event.find({})
+    
+            if(events.length === 0) return res.status(400).json({message: {msgBody: 'no events to get'},msgError: true})
+    
+            return res.status(200).json({message: {msgBody: 'all events',msgError: false},events})
+        }
+
+        return res.status(403).json({message: {msgBody: "not an admin or user, can't get events",msgError: true}})
+
+    }catch(err){
+        console.log(err)
+    }
+})
+
+
+
+
+
+
+//______________________________________________Create an event_______________________________________________________________________________________
+//iei toți useri din toate grupurile alea
+//Și ii contopești cu aia de la users
+//Si ii pui in invites
 
 
 

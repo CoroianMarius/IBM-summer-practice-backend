@@ -33,7 +33,7 @@ groupRouter.post('/', passport.authenticate('jwt', {session: false}), async(req,
         users = users.map(user => user.username)
 
         //            Adaugare notificare ca grupul a fost creat
-        //              Ex: Admin1 created Group1
+        //              Ex: Admin1 created Group1q
         //            Sa se retina data curenta
         // const msg = "nume" + " created " + name
         // notifications = [{message: {msg}, date: "current date"}]
