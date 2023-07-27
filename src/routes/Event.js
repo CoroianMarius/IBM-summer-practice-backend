@@ -167,14 +167,9 @@ eventsRouter.get('/users/:id', async(req,res) => {
 eventsRouter.get('/upcoming', passport.authenticate('jwt',{session: false}) ,async(req,res) => {
     try{
 
-        if(req.user.role === 'admin'){
-            return res.status(403).json({message: {msgBody: "admin can't be a participant of an event",msgError: true}})
-        }
-
 
         const events = await Event.find({participants: req.user.username})
-
-        if(events.length === 0) return res.status(400).json({message: {msgBody: 'you are not participant of any event'},msgError: true})
+        if(events.length === 0) return res.status(400).json({message: {msgBody: 'you are not participant of any event'},msgError: true}, events)
 
         res.status(200).json({message: {msgBody: 'all events you are a participant',msgError: false},events})
 
@@ -198,9 +193,8 @@ eventsRouter.put('/upcoming/:id', passport.authenticate('jwt',{session: false}),
         if(!event) return res.status(400).json({message: {msgBody: 'no event with this id'},msgError: true});
 
         const user = req.user.username;
-        console.log(user)
         const invites = event.invites;
-        if(!invites.includes(user)) return res.status(400).json({message: {msgBody: 'you are not invited to this event'},msgError: true});
+        // if(!invites.includes(user)) return res.status(400).json({message: {msgBody: 'you are not invited to this event'},msgError: true});
 
         const participants = event.participants;
         if(participants.includes(user)) return res.status(400).json({message: {msgBody: 'you are already a participant of this event'},msgError: true});
