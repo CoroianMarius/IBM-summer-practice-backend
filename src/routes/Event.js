@@ -217,6 +217,29 @@ eventsRouter.put('/upcoming/:id', passport.authenticate('jwt',{session: false}),
     }
 });
 
+//_____________________________________________ Remove the user from participants_______________________________________________________________________________________
+eventsRouter.put('/remove/:id', passport.authenticate('jwt',{session: false}), async(req,res) => {
+    try{
+        const {id} = req.params;
+        const event = await Event.findById(id);
+        if(!event) return res.status(400).json({message: {msgBody: 'no event with this id'},msgError: true});
+
+        const user = req.user.username;
+        console.log(user)
+        const participant = event.participants;
+        if(!participant.includes(user)) return res.status(400).json({message: {msgBody: 'you are not a participant to this event'},msgError: true});
+
+        const updatedEvent = await Event.findByIdAndUpdate(id,{
+            $pull: {participants: user}
+        },{new: true});
+
+        res.status(200).json({message: {msgBody: 'you left the event',msgError: false},event: updatedEvent});
+
+    }catch(err){
+        console.log(err);
+    }
+});
+
 
 
 
@@ -261,14 +284,32 @@ eventsRouter.get('/', passport.authenticate('jwt',{session: false}), async(req,r
 })
 
 
+//_________________________________________ SEND INVITES ______________________________________________________________________________
+eventsRouter.post('/invites', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+      const { event, users } = req.body;
+  
+      const invites = users.filter(user => !event.invites.includes(user) && !event.participants.includes(user));
+  
+      console.log(event);
+      
 
+      // Add all the users from invites to the invites array inside the event
+      event.invites.push(...invites);
 
+  
+      // Update the event in the database
+      await Event.findByIdAndUpdate(event._id, { invites: event.invites });
 
-
-//______________________________________________Create an event_______________________________________________________________________________________
-//iei toți useri din toate grupurile alea
-//Și ii contopești cu aia de la users
-//Si ii pui in invites
+      // send invites to all on mail
+  
+      console.log(event.invites);
+  
+      res.status(201).json({ message: { msgBody: 'Event successfully created', msgError: false } });
+    } catch (err) {
+      console.log(err);
+    }
+  });
 
 
 
