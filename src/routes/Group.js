@@ -8,11 +8,6 @@ const passport = require('passport')
 //_________________________________________IA TOATE GRUPURILE USERULUI (LOGAT) ______________________________________________________________________________
 groupRouter.get('/', passport.authenticate('jwt', {session: false}), async(req,res) => {
     try{
-
-        if(req.user.role === 'admin'){
-            return res.status(403).json({message: {msgBody: "not an admin, can't get groups", msgError: true}})
-        }
-
         const groups = await Group.find({users: req.user.username}).select('-_id')
         res.status(200).json({groups})
     }catch(err){
@@ -23,11 +18,6 @@ groupRouter.get('/', passport.authenticate('jwt', {session: false}), async(req,r
 
 groupRouter.get('/all', passport.authenticate('jwt', {session: false}), async(req,res) => {
   try{
-
-      if(req.user.role === 'admin'){
-          return res.status(403).json({message: {msgBody: "not an admin, can't get groups", msgError: true}})
-      }
-
       const groups = await Group.find()
       res.status(200).json({groups})
   }catch(err){
