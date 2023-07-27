@@ -4,7 +4,7 @@ const passport = require('passport')
 const passportConfig = require('../passport')
 const Group = require('../models/Group')
 const User = require('../models/User')
-
+const sgMail = require('@sendgrid/mail')
 
 
 const eventsRouter = express.Router()
@@ -284,20 +284,51 @@ eventsRouter.post('/invites', passport.authenticate('jwt', { session: false }), 
       const { event, users } = req.body;
   
       const invites = users.filter(user => !event.invites.includes(user) && !event.participants.includes(user));
-  
-      console.log(event);
-      
 
       // Add all the users from invites to the invites array inside the event
       event.invites.push(...invites);
-
   
       // Update the event in the database
       await Event.findByIdAndUpdate(event._id, { invites: event.invites });
 
-      // send invites to all on mail
-  
+
       console.log(event.invites);
+
+    
+    
+      const nodemailer = require("nodemailer");
+    const sgTransport = require("nodemailer-sendgrid-transport");
+
+    const options = {
+    auth: {
+        api_key: "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",
+    },
+    };
+
+    const transporter = nodemailer.createTransport(sgTransport(options));
+
+    for (let i = 0; i < invites.length; i++) {
+        
+        const emailMessage = {
+            to: invites[i],
+            from: "eventplanneremailsender13245@aol.com",
+            subject: `New invite`,
+            text: `You have been invited to: ${event.title}`,
+            };
+        
+            try {
+            await transporter.sendMail(emailMessage);
+            console.log(emailMessage);
+            console.log("Email sent successfully.");
+            } catch (err) {
+            console.error(`Failed to send email to ${invites[i]}`, err);
+            }
+
+    }
+
+
+
+
   
       res.status(201).json({ message: { msgBody: 'Event successfully created', msgError: false } });
     } catch (err) {
